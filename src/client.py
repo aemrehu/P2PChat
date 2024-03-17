@@ -4,14 +4,14 @@ import threading
 
 class Client:
 
-    sport = 50001
+    sport = 50002
 
     get_peer = False
 
     approved_peers = []
 
-    ip = ""
-    dport = 0
+    ip = "192.168.10.37"
+    dport = 50000
 
     sock = None
 
@@ -19,10 +19,10 @@ class Client:
         pass
 
     def run(self):
-        print("Please enter the server's IP address and port in the format 'ip:port'")
-        address = input()
-        self.ip, port = address.split(":")
-        self.dport = int(port)
+        # print("Please enter the server's IP address and port in the format 'ip:port'")
+        # address = input()
+        # self.ip, port = address.split(":")
+        # self.dport = int(port)
         self.approved_peers.append((self.ip, self.dport))
 
         print("Punching hole")
@@ -65,7 +65,7 @@ class Client:
             msg = input('> ')
             self.sock.sendto(msg.encode(), (self.ip, self.dport))
 
-            if msg == 'peer':
+            if 'peer' in msg:
                 self.get_peer = True
 
 
