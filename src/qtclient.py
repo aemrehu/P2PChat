@@ -36,12 +36,6 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # try:
-        #     self.serverIp = socket.gethostbyname(socket.gethostname())
-        # except socket.gaierror:
-        #     print("Hostname could not be resolved. Exiting")
-        #     sys.exit()
-
         self.serverIp, self.serverPort = open(Path("src/server.txt")).read().split(":")
         self.serverPort = int(self.serverPort)
 
