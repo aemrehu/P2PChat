@@ -27,11 +27,16 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        
+        try:
+            self.brokerIp = socket.gethostbyname(socket.gethostname())
+        except socket.gaierror:
+            print("Hostname could not be resolved. Exiting")
+            sys.exit()
 
-        self.brokerIp = "192.168.10.37"
         self.brokerPort = 50000
 
-        self.sport = 50003
+        self.sport = self.find_available_sender_port(50003, 60000)
         self.get_peer = False
         self.approved_peers = []
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -72,6 +77,16 @@ class MainWindow(QMainWindow):
 
         self.send_button.clicked.connect(self.send_message)
         self.input_text.returnPressed.connect(self.send_message)
+        
+    def find_available_sender_port(self, start_port, end_port):
+        for port in range(start_port, end_port + 1):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    s.bind(('0.0.0.0', port))
+                return port
+            except OSError:
+                pass
+        raise OSError("Could not find an available port in the range.")
 
     def connect_to_broker(self):
         self.sock.sendto(b'punch', (self.brokerIp, self.brokerPort))
