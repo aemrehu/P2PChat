@@ -1,6 +1,5 @@
 import socket
 import logging
-import threading
 import json
 from pathlib import Path
 
@@ -16,15 +15,20 @@ class Server:
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((host, port))
+        self.sock.settimeout(0.5)
         self.peers = {}  # Dict to keep track of connected peers
         self.index = 0
 
         logging.info('Server initialized')
 
-    def start_server(self):
-        def accept_peers():
-            while True:
-                data, addr = self.sock.recvfrom(1024)
+    def run(self):
+        logging.info('Server is running')
+        while True:
+            try:
+                try:
+                    data, addr = self.sock.recvfrom(1024)
+                except socket.timeout:
+                    continue
                 logging.info(f"Received {data.decode()} from {addr}")
                 if data.decode() == 'punch':
                     if addr not in self.peers.values():
@@ -43,17 +47,10 @@ class Server:
                     i = int(data.decode().split(' ')[1])
                     self.sock.sendto(json.dumps(self.peers[i]).encode('ascii'), addr)
                     logging.info(f"Sent peer {i} to {addr}")
-
-        threading.Thread(target=accept_peers).start()
-        logging.info('Server started')
+            except KeyboardInterrupt:
+                logging.info('Server stopped')
+                break
 
 if __name__ == "__main__":
     server = Server()
-    threading.Thread(target=server.start_server).start()
-
-    logging.info('Server is running')
-
-    # wait for q to quit
-    while True:
-        if input() == 'q':
-            exit()
+    server.run()
