@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
 
         # Add broker tab
         self.broker_widget = QTextEdit()
+        self.broker_widget.setReadOnly(True)
         self.tab_widget.addTab(self.broker_widget, "Broker")
 
         # self.client_threads = {}  # Dictionary to store ClientThread instances for each client
@@ -103,7 +104,9 @@ class MainWindow(QMainWindow):
         self.approved_peers.append((ip, port))
         self.tab_index_mapping[self.tab_count] = (ip, port)
         self.tab_count += 1
-        self.tab_widget.addTab(QTextEdit(), f"{ip}:{port}")
+        widget = QTextEdit()
+        widget.setReadOnly(True)
+        self.tab_widget.addTab(widget, f"{ip}:{port}")
 
         print(self.tab_index_mapping)
 
