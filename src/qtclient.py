@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         self.communicator.message_received.connect(self.append_message)
 
         self.setWindowTitle(f"Chat - {self.sport}")
+        self.resize(500, 600)
 
         self.central_widget = QWidget()  # Create a central widget
         self.setCentralWidget(self.central_widget)  # Set the central widget
