@@ -7,7 +7,8 @@ class Broker:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((host, port))
         # self.sock.listen(5)  # Increase the backlog value to allow more pending connections
-        self.peers = []  # List to keep track of connected peers
+        self.peers = {}  # Dict to keep track of connected peers
+        self.index = 0
 
     def handle_peer(self, peer):
         while True:
@@ -29,16 +30,22 @@ class Broker:
             while True:
                 data, addr = self.sock.recvfrom(1024)
                 if data.decode() == 'punch':
-                    if addr not in self.peers:
-                        self.peers.append(addr)
+                    if addr not in self.peers.values():
+                        self.peers[int(self.index)] = addr
+                        self.index += 1
                     print(f"Punched hole for {addr}")
                 if data.decode() == 'list':
-                    self.sock.sendto(json.dumps(self.peers).encode('ascii'), addr)
-                if data.decode() == 'peer':
-                    for peer in self.peers:
+                    # self.sock.sendto(json.dumps(self.peers).encode('ascii'), addr)
+                    for i, peer in self.peers.items():
                         if peer != addr:
-                            self.sock.sendto(json.dumps(peer).encode('ascii'), addr)
-                            break
+                            self.sock.sendto(f'{i}: {peer}'.encode('ascii'), addr)
+                if data.decode().split(' ')[0] == 'peer':
+                    i = int(data.decode().split(' ')[1])
+                    self.sock.sendto(json.dumps(self.peers[i]).encode('ascii'), addr)
+                    # for peer in self.peers:
+                    #     if peer != addr:
+                    #         self.sock.sendto(json.dumps(peer).encode('ascii'), addr)
+                    #         break
 
                 # peer, address = self.sock.accept()
                 # self.peers.append([peer, address])
@@ -53,4 +60,4 @@ if __name__ == "__main__":
     # wait for q to quit
     while True:
         if input() == 'q':
-            break
+            exit()
