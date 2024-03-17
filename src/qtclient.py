@@ -30,13 +30,13 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # try:
-        #     self.brokerIp = socket.gethostbyname(socket.gethostname())
+        #     self.serverIp = socket.gethostbyname(socket.gethostname())
         # except socket.gaierror:
         #     print("Hostname could not be resolved. Exiting")
         #     sys.exit()
 
-        self.brokerIp, self.brokerPort = open(Path("src/broker.txt")).read().split(":")
-        self.brokerPort = int(self.brokerPort)
+        self.serverIp, self.serverPort = open(Path("server.txt")).read().split(":")
+        self.serverPort = int(self.serverPort)
 
         self.sport = self.find_available_sender_port(50000, 60000)
         self.get_peer = False
@@ -61,10 +61,10 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.layout.addWidget(self.tab_widget)
 
-        # Add broker tab
-        self.broker_widget = QTextEdit()
-        self.broker_widget.setReadOnly(True)
-        self.tab_widget.addTab(self.broker_widget, "Broker")
+        # Add server tab
+        self.server_widget = QTextEdit()
+        self.server_widget.setReadOnly(True)
+        self.tab_widget.addTab(self.server_widget, "Server")
 
         # self.client_threads = {}  # Dictionary to store ClientThread instances for each client
         self.tab_index_mapping = {}  # Dictionary to map tab index to client address
@@ -92,10 +92,10 @@ class MainWindow(QMainWindow):
                 pass
         raise OSError("Could not find an available port in the range.")
 
-    def connect_to_broker(self):
-        self.sock.sendto(b'punch', (self.brokerIp, self.brokerPort))
-        self.approved_peers.append((self.brokerIp, self.brokerPort))
-        self.tab_index_mapping[0] = (self.brokerIp, self.brokerPort)
+    def connect_to_server(self):
+        self.sock.sendto(b'punch', (self.serverIp, self.serverPort))
+        self.approved_peers.append((self.serverIp, self.serverPort))
+        self.tab_index_mapping[0] = (self.serverIp, self.serverPort)
         self.tab_count += 1
 
     def connect_to_peer(self, addr):
@@ -131,10 +131,10 @@ class MainWindow(QMainWindow):
                 # print("appending message")
                 self.tab_widget.widget(tab_index).append(f"Them: {message_text}")
                 return
-        # If sender address not found in mapping, assume it's from the broker
-        # print("Tab not found, appending to broker")
+        # If sender address not found in mapping, assume it's from the server
+        # print("Tab not found, appending to server")
         if 'punch' in message_text:
-            self.broker_widget.append(f"{sender_addr}: {message_text}")
+            self.server_widget.append(f"{sender_addr}: {message_text}")
 
     def send_message(self):
         msg = self.input_text.text()
@@ -146,8 +146,8 @@ class MainWindow(QMainWindow):
             dest_addr = self.tab_index_mapping[current_tab_index]
 
             # Append the sent message to the appropriate widget
-            if dest_addr == (self.brokerIp, self.brokerPort):
-                self.broker_widget.append(f"You: {msg}")
+            if dest_addr == (self.serverIp, self.serverPort):
+                self.server_widget.append(f"You: {msg}")
             else:
                 for tab_index, client_addr in self.tab_index_mapping.items():
                     if client_addr == dest_addr:
@@ -163,6 +163,6 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.connect_to_broker()  # Replace with your server IP and port
+    window.connect_to_server()  # Replace with your server IP and port
     window.show()
     sys.exit(app.exec())

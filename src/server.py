@@ -3,15 +3,14 @@ import threading
 import json
 from pathlib import Path
 
-class Broker:
+class Server:
     def __init__(self):
-        port = open(Path("src/broker.txt")).read().split(':')[1]
+        port = open(Path("src/server.txt")).read().split(':')[1]
         port = int(port)
         host = '0.0.0.0'
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((host, port))
-        # self.sock.listen(5)  # Increase the backlog value to allow more pending connections
         self.peers = {}  # Dict to keep track of connected peers
         self.index = 0
 
@@ -28,9 +27,7 @@ class Broker:
                 peer.send(json.dumps(self.peers).encode('ascii'))
                 continue
 
-            print(f"Received message from {peer.getpeername()}: {data}")
-
-    def start_broker(self):
+    def start_server(self):
         def accept_peers():
             while True:
                 data, addr = self.sock.recvfrom(1024)
@@ -47,20 +44,12 @@ class Broker:
                 if data.decode().split(' ')[0] == 'peer':
                     i = int(data.decode().split(' ')[1])
                     self.sock.sendto(json.dumps(self.peers[i]).encode('ascii'), addr)
-                    # for peer in self.peers:
-                    #     if peer != addr:
-                    #         self.sock.sendto(json.dumps(peer).encode('ascii'), addr)
-                    #         break
-
-                # peer, address = self.sock.accept()
-                # self.peers.append([peer, address])
-                # threading.Thread(target=self.handle_peer, args=(peer,)).start()
 
         threading.Thread(target=accept_peers).start()
 
 if __name__ == "__main__":
-    broker = Broker()
-    threading.Thread(target=broker.start_broker).start()
+    server = Server()
+    threading.Thread(target=server.start_server).start()
 
     # wait for q to quit
     while True:
