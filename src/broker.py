@@ -1,9 +1,14 @@
 import socket
 import threading
 import json
+from pathlib import Path
 
 class Broker:
-    def __init__(self, host='0.0.0.0', port=50000):
+    def __init__(self):
+        port = open(Path("src/broker.txt")).read().split(':')[1]
+        port = int(port)
+        host = '0.0.0.0'
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((host, port))
         # self.sock.listen(5)  # Increase the backlog value to allow more pending connections

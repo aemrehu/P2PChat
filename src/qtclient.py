@@ -3,6 +3,7 @@ import threading
 from PySide6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit, QTextEdit
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 import socket
+from pathlib import Path
 
 class Communicator(QObject):
     message_received = Signal(str)
@@ -27,16 +28,17 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        
-        try:
-            self.brokerIp = socket.gethostbyname(socket.gethostname())
-        except socket.gaierror:
-            print("Hostname could not be resolved. Exiting")
-            sys.exit()
 
-        self.brokerPort = 50000
+        # try:
+        #     self.brokerIp = socket.gethostbyname(socket.gethostname())
+        # except socket.gaierror:
+        #     print("Hostname could not be resolved. Exiting")
+        #     sys.exit()
 
-        self.sport = self.find_available_sender_port(50003, 60000)
+        self.brokerIp, self.brokerPort = open(Path("src/broker.txt")).read().split(":")
+        self.brokerPort = int(self.brokerPort)
+
+        self.sport = self.find_available_sender_port(50000, 60000)
         self.get_peer = False
         self.approved_peers = []
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -47,7 +49,7 @@ class MainWindow(QMainWindow):
         self.listener.start()
         self.communicator.message_received.connect(self.append_message)
 
-        self.setWindowTitle("Chat Application")
+        self.setWindowTitle(f"Chat - {self.sport}")
 
         self.central_widget = QWidget()  # Create a central widget
         self.setCentralWidget(self.central_widget)  # Set the central widget
@@ -77,7 +79,7 @@ class MainWindow(QMainWindow):
 
         self.send_button.clicked.connect(self.send_message)
         self.input_text.returnPressed.connect(self.send_message)
-        
+
     def find_available_sender_port(self, start_port, end_port):
         for port in range(start_port, end_port + 1):
             try:
