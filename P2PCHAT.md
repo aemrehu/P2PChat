@@ -88,8 +88,8 @@ Can be installed in a virtual environment.
 ## Results of the tests:
 
 ### System throughput
-We ran tests by sending `1000` messages through the system and were able to conclude an average time per 1000 messages at `5 seconds`
+We ran tests by sending `1000` messages through the system and were able to conclude an average time per 1000 messages at `6 milliseconds`
 
-* **5 s / 1000 messages**
+* **6 ms / 1000 messages**
 
 Rest of the testing is still underway.
