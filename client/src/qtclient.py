@@ -99,6 +99,8 @@ class MainWindow(QMainWindow):
         self.send_button.clicked.connect(self.send_message)
         self.input_text.returnPressed.connect(self.send_message)
 
+        self.INSTRUCTIONS = "Type 'list' to get a list of available peers.\nType 'peer <number>' to initiate chat."
+
         logging.info("MainWindow initialized")
 
     def find_available_sender_port(self, start_port, end_port):
@@ -145,28 +147,35 @@ class MainWindow(QMainWindow):
             address = message_text.split(", ")
             address = (address[0].strip("\"[]"), int(address[1].strip("\"[]")))
             self.connect_to_peer(address)
+            return
 
         for tab_index, client_addr in self.tab_index_mapping.items():
             # print("tab_index", tab_index, "client_addr", client_addr, "sender_addr", sender_addr)
 
             if client_addr == sender_addr:
                 # print("appending message")
-                self.tab_widget.widget(tab_index).append(f"Them: {message_text}")
                 if 'punched' in message_text:
                     logging.info(f"Connect successful to {sender_addr}")
+                    if tab_index == 0:
+                        self.server_widget.append(f"{self.INSTRUCTIONS}")
+                    return
                 elif 'punch' in message_text:
                     self.sock.sendto("punched".encode(), sender_addr)
                     logging.info(f"Received punch from {sender_addr}")
+                    return
+                
+                self.tab_widget.widget(tab_index).append(f"Them: {message_text}")
                 return
         # If sender address not found in mapping, assume it's from the server
         # print("Tab not found, appending to server")
         if 'punched' in message_text:
-            self.server_widget.append(f"{sender_addr}: {message_text}")
+            # self.server_widget.append(f"{sender_addr}: {message_text}")
             logging.info(f"Connect successful to {sender_addr}")
         elif 'punch' in message_text:
-            self.server_widget.append(f"{sender_addr}: {message_text}")
             self.sock.sendto("punched".encode(), sender_addr)
             logging.info(f"Received punch from {sender_addr}")
+            self.server_widget.append(f"{sender_addr} wants to connect!")
+        return
 
     def send_message(self):
         msg = self.input_text.text()
