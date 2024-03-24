@@ -16,7 +16,6 @@ class Server:
         try:
             host, port = open(os.path.join(__location__, 'server.txt')).read().split(':')
             port = int(port)
-            # host = '0.0.0.0'
         except Exception as e:
             logging.error(f"Failed to read server.txt: {e}")
             raise e

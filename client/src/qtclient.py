@@ -83,11 +83,8 @@ class MainWindow(QMainWindow):
         self.server_widget.setReadOnly(True)
         self.tab_widget.addTab(self.server_widget, "Server")
 
-        # self.client_threads = {}  # Dictionary to store ClientThread instances for each client
         self.tab_index_mapping = {}  # Dictionary to map tab index to client address
         self.tab_count = 0
-
-        # self.tab_widget.currentChanged.connect(self.tab_changed)
 
         # Input box and sending button
         self.input_text = QLineEdit()
@@ -143,17 +140,13 @@ class MainWindow(QMainWindow):
 
         if self.get_peer:
             self.get_peer = False
-            # print(message_text)
             address = message_text.split(", ")
             address = (address[0].strip("\"[]"), int(address[1].strip("\"[]")))
             self.connect_to_peer(address)
             return
 
         for tab_index, client_addr in self.tab_index_mapping.items():
-            # print("tab_index", tab_index, "client_addr", client_addr, "sender_addr", sender_addr)
-
             if client_addr == sender_addr:
-                # print("appending message")
                 if 'punched' in message_text:
                     logging.info(f"Connect successful to {sender_addr}")
                     if tab_index == 0:
@@ -166,10 +159,7 @@ class MainWindow(QMainWindow):
                 
                 self.tab_widget.widget(tab_index).append(f"Them: {message_text}")
                 return
-        # If sender address not found in mapping, assume it's from the server
-        # print("Tab not found, appending to server")
         if 'punched' in message_text:
-            # self.server_widget.append(f"{sender_addr}: {message_text}")
             logging.info(f"Connect successful to {sender_addr}")
         elif 'punch' in message_text:
             self.sock.sendto("punched".encode(), sender_addr)
@@ -206,7 +196,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.connect_to_server()  # Replace with your server IP and port
+    window.connect_to_server()
     window.show()
     logging.info("MainWindow shown")
     sys.exit(app.exec())
