@@ -19,7 +19,7 @@ Install package
 
     pip install -e .
 
-Create a file called `server.txt` in the `src` folder.
+Create a file called `server.txt` in the `client/src` folder.
 
 In the file type the IP-address and port of the server you want to connect to:
 
@@ -28,13 +28,13 @@ In the file type the IP-address and port of the server you want to connect to:
 ### Run
 Run the client from command line:
 
-    python src/qtclient.py
+    python qtclient.py
 
 Client UI will open in a separate window.
 
 
 ## Server
-Create a file called `server.txt` in the `src` folder.
+Create a file called `server.txt` in the `server/src` folder.
 
 In the file type the IP-address and port where you want to run the server:
 
@@ -43,5 +43,5 @@ In the file type the IP-address and port where you want to run the server:
 ### Run
 Run the server from command line:
 
-    python src/server.py
+    python server.py
 
