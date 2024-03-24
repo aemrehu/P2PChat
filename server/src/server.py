@@ -60,7 +60,6 @@ class Server:
                     try:
                         i = int(data.decode().split(' ')[1])
                         self._send(json.dumps(self.peers[i]), addr)
-                        logging.info(f"Sent peer {i} to {addr}")
                     except Exception as e:
                         logging.error(f"{e}")
             except KeyboardInterrupt:
