@@ -1,13 +1,17 @@
 import sys
+import os
 import threading
 from PySide6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit, QTextEdit
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 import socket
-from pathlib import Path
 import logging
 
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 # Configure logging
-logging.basicConfig(filename='qtclient.log', level=logging.INFO,
+logpath = os.path.join(__location__[:-4], 'log')
+os.makedirs(logpath, exist_ok=True)
+logging.basicConfig(filename=os.path.join(logpath, 'qtclient.log'), level=logging.INFO,
                     format='%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 class Communicator(QObject):
@@ -20,12 +24,21 @@ class ListenerThread(threading.Thread):
         self.communicator = communicator
         self.main = main
         self.running = True
+        self._tryagain = 3
 
     def run(self):
         while self.running:
-            data, addr = self.sock.recvfrom(1024)
-            self.communicator.message_received.emit(f"{addr}: {data.decode()}")
-            logging.info(f"LISTENER: Received message from {addr}: {data.decode()}")
+            try:
+                data, addr = self.sock.recvfrom(1024)
+                self.communicator.message_received.emit(f"{addr}: {data.decode()}")
+                logging.info(f"LISTENER: Received message from {addr}: {data.decode()}")
+            except Exception as e:
+                logging.error(f"LISTENER: {e}")
+                if self._tryagain > 0:
+                    self._tryagain -= 1
+                    logging.info("LISTENER: Restarting listener")
+                else:
+                    self.stop()
 
     def stop(self):
         self.running = False
@@ -36,7 +49,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.serverIp, self.serverPort = open(Path("src/server.txt")).read().split(":")
+        __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        self.serverIp, self.serverPort = open(os.path.join(__location__, 'server.txt')).read().split(":")
         self.serverPort = int(self.serverPort)
 
         self.sport = self.find_available_sender_port(50001, 60000)
