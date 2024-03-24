@@ -44,9 +44,12 @@ class Server:
                             self.sock.sendto(f'{i}: {peer}'.encode('ascii'), addr)
                     logging.info(f"Sent list of peers to {addr}")
                 if data.decode().split(' ')[0] == 'peer':
-                    i = int(data.decode().split(' ')[1])
-                    self.sock.sendto(json.dumps(self.peers[i]).encode('ascii'), addr)
-                    logging.info(f"Sent peer {i} to {addr}")
+                    try:
+                        i = int(data.decode().split(' ')[1])
+                        self.sock.sendto(json.dumps(self.peers[i]).encode('ascii'), addr)
+                        logging.info(f"Sent peer {i} to {addr}")
+                    except Exception as e:
+                        logging.error(f"{e}")
             except KeyboardInterrupt:
                 logging.info('Server stopped')
                 break
